@@ -983,6 +983,9 @@ class RandomPerspective(_RandomApplyTransform):
 
     def make_params(self, flat_inputs: list[Any]) -> dict[str, Any]:
         height, width = query_size(flat_inputs)
+        # An input with a one-pixel side has collinear corners, so no perspective warp exists.
+        if height < 2 or width < 2:
+            return dict(coefficients=None)
 
         distortion_scale = self.distortion_scale
 
@@ -1012,6 +1015,8 @@ class RandomPerspective(_RandomApplyTransform):
         return dict(coefficients=perspective_coeffs)
 
     def transform(self, inpt: Any, params: dict[str, Any]) -> Any:
+        if params["coefficients"] is None:
+            return inpt
         fill = _get_fill(self._fill, type(inpt))
         return self._call_kernel(
             F.perspective,

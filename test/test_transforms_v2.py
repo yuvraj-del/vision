@@ -5291,6 +5291,14 @@ class TestPerspective:
         with pytest.raises(ValueError, match="distortion_scale value should be between 0 and 1"):
             transforms.RandomPerspective(distortion_scale=distortion_scale)
 
+    @pytest.mark.parametrize("size", [(8, 1), (1, 8), (1, 1)])
+    def test_transform_one_pixel_side(self, size):
+        image = make_image(size)
+        boxes = tv_tensors.BoundingBoxes([[0, 0, size[1], size[0]]], format="XYXY", canvas_size=size)
+        out_image, out_boxes = transforms.RandomPerspective(p=1)(image, boxes)
+        assert_equal(out_image, image)
+        assert_equal(out_boxes, boxes)
+
     @pytest.mark.parametrize("coefficients", COEFFICIENTS)
     @pytest.mark.parametrize("interpolation", ["nearest", "bilinear"])
     @pytest.mark.parametrize("fill", CORRECTNESS_FILLS)

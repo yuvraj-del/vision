@@ -808,7 +808,8 @@ class RandomPerspective(torch.nn.Module):
             else:
                 fill = [float(f) for f in fill]
 
-        if torch.rand(1) < self.p:
+        # An image with a one-pixel side has collinear corners, so no perspective warp exists.
+        if torch.rand(1) < self.p and height > 1 and width > 1:
             startpoints, endpoints = self.get_params(width, height, self.distortion_scale)
             return F.perspective(img, startpoints, endpoints, self.interpolation, fill)
         return img
